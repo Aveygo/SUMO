@@ -1,0 +1,92 @@
+<html>
+    <body>
+        <div id="images">
+            <div class="image_holder">
+                <img src="/pull/0.jpeg">
+            </div>
+            <div class="image_holder">
+                <img src="/pull/1.jpeg">
+            </div>
+            <div class="image_holder">
+                <img src="/pull/2.jpeg">
+            </div>
+        </div>
+    </body>
+    
+</html>
+<style>
+
+html {
+    background-color: #090909;
+    scroll-snap-type: y mandatory;
+}
+
+#images {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.image_holder {
+    display: flex;
+    align-items: center;
+    scroll-snap-align: start;
+    height: 100vh;
+}
+
+.image_holder img {
+    box-sizing: border-box;
+    padding: 8px;
+    margin: 0 auto;
+    max-width:100%;
+    max-height:100%;
+    margin: auto;
+    display: block;
+}
+
+
+</style>
+<script>
+
+function getRandomInt(max) {
+    return Math.floor(Math.random() * max);
+}
+
+function gen(old_src) {   
+    fetch("/push/" + old_src.substr(old_src.lastIndexOf("/") + 1))
+    new_src = "/pull/" + getRandomInt(9999999).toString() + ".jpeg"
+    
+    template = document.createElement("div")
+    template.classList.add("image_holder")
+    template_img = document.createElement("img")
+    template_img.src = new_src //"http://placekitten.com/500/500"
+    template.appendChild(template_img)
+    
+    document.querySelector("#images").appendChild(template)
+    observer.observe(template_img)
+
+}
+
+var observer = new IntersectionObserver(function (entries) {
+    if (!entries[0].isIntersecting) {
+
+        if (entries[0].target._seen === true){
+            console.log(entries[0].target.src)
+            // entries[0].target.parentElement.remove()
+            gen(entries[0].target.src)
+            entries[0].target._seen = null
+        }
+    }
+    else {
+        entries[0].target._seen = true
+    }
+});
+
+elements = document.querySelectorAll(".image_holder img")
+elements.forEach(entry => {
+    observer.observe(entry)
+})
+
+
+</script>

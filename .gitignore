@@ -1,0 +1,12 @@
+*.pth
+*.safetensors
+*.gguf
+*.pickle
+*.jpg
+__pycache__/*
+
+realesr.py
+test.py
+vector_db.py
+
+# *.jpeg *.png # Needed for readme
