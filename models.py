@@ -1,4 +1,6 @@
 from diffusers import AutoPipelineForText2Image, StableDiffusionXLPipeline
+from diffusers import StableCascadeDecoderPipeline, StableCascadePriorPipeline
+
 import torch
 
 class ModelConfig:
@@ -25,6 +27,20 @@ class ModelConfig:
 
     def __repr__(self):
         return f"Steps: {self.steps}, Guidance: {self.guidance_scale}, Features: {self.exploit_scale}, Width: {self.width}, Height: {self.height}"
+
+class StableCascade(ModelConfig):
+    def __init__(self, seed_prompts:str="seed_prompts/primary.txt"):
+        super().__init__(seed_prompts)
+        self.prior = StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", torch_dtype=torch.bfloat16).to("cuda")
+        self.decoder = StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade",  torch_dtype=torch.float16).to("cuda")
+
+
+        self.width = 1024
+        self.height = 1024
+        self.prior_steps = 10
+        self.decoder_steps = 8
+        self.guidance_scale = 2
+        self.exploit_scale = 0.2
 
 class StabilityTurbo(ModelConfig):
     def __init__(self, seed_prompts:str="seed_prompts/primary.txt"):
@@ -61,7 +77,9 @@ class DreamShaperTurbo(ModelConfig):
 
         self.steps = 8
         self.guidance_scale = 2
-        self.exploit_scale = 0.3
+        self.exploit_scale = 0.2
+
+        self.lines = [i for i in self.lines if "woman" in i or "girl" in i or "nsfw" in i]
 
 class UltraSpiceTurbo(ModelConfig):
     def __init__(self, seed_prompts:str="seed_prompts/primary.txt"):
@@ -75,3 +93,41 @@ class UltraSpiceTurbo(ModelConfig):
         self.steps = 6
         self.guidance_scale = 2
         self.exploit_scale = 0.3
+
+if __name__ == "__main__":
+    import time
+    model = StableCascade()
+
+    torch.manual_seed(47)
+    latents = torch.randn((1, 4, 256, 256)).cuda().half()
+
+    torch.manual_seed(42)
+    a = time.time()
+    
+    prior_output = model.prior(
+        prompt="borris johnson in a bathtub of beans",
+        height=1024,
+        width=1024,
+        #negative_prompt=negative_prompt,
+        guidance_scale=4.0,
+        num_images_per_prompt=1,
+        num_inference_steps=5
+    )
+
+    print(prior_output.image_embeddings.shape)
+    b = time.time()
+
+    decoder_output = model.decoder(
+        image_embeddings=prior_output.image_embeddings.half(),
+        prompt="", # Not needed?
+        #negative_prompt=negative_prompt,
+        latents=latents,
+        guidance_scale=1, 
+        output_type="pil",
+        num_inference_steps=2
+    ).images
+
+    print(f"Prior took {b-a:.2f} seconds")
+    print(f"Decoder took {time.time() - b:.2f} seconds")
+
+    decoder_output[0].save("imgs/cascade_test.png")

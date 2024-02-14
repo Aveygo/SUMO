@@ -18,12 +18,17 @@ from fastapi.templating import Jinja2Templates
 import io
 from fastapi.middleware.cors import CORSMiddleware
 
+from latent.latent import Latent
 from optimizer import AdamOptimizer
-from latent import SDXLTurboInput
-from models import StabilityTurbo, RealVisTurbo, DreamShaperTurbo, UltraSpiceTurbo
 from algo import QueuedImageGen
 
-profile = AdamOptimizer(StabilityTurbo(), SDXLTurboInput)
+from models import StabilityTurbo, RealVisTurbo, DreamShaperTurbo, UltraSpiceTurbo
+from latent.SDXLTurboInput import SDXLTurboInput
+profile = AdamOptimizer(DreamShaperTurbo(), SDXLTurboInput, lr=0.05)
+
+#from models import StableCascade
+#from latent.StableCascadeInput import StableCascadeInput
+#profile = AdamOptimizer(StableCascade(), StableCascadeInput, lr=5e-3)
 
 #profile.load("saved_latents/primary.pickle")
 
@@ -52,7 +57,7 @@ templates = Jinja2Templates(directory="templates")
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-def show(latent:SDXLTurboInput):
+def show(latent:Latent):
     imgio = io.BytesIO()
     latent.generate().save(imgio, 'JPEG')
     imgio.seek(0)

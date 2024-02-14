@@ -3,10 +3,11 @@
 *.gguf
 *.pickle
 *.jpg
-__pycache__/*
+*.pyc
 
 realesr.py
 test.py
 vector_db.py
+secondary.txt
 
 # *.jpeg *.png # Needed for readme

@@ -1,4 +1,4 @@
-from latent import Latent
+from latent.latent import Latent
 from optimizer import AdamOptimizer
 
 import random, time
@@ -14,7 +14,7 @@ class QueuedImageGen(Thread):
 
         # Number of pre-generated images, 
         # Does not prevent against user requesting images faster than generation
-        self.q_size = 2
+        self.q_size = 3
 
         self.profile:AdamOptimizer = profile
         

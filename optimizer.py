@@ -1,9 +1,8 @@
 from typing import Type
 
 from models import ModelConfig
-from latent import Latent
+from latent.latent import Latent
 import pickle, numpy as np
-
 
 class AdamOptimizer:
     """
@@ -13,8 +12,8 @@ class AdamOptimizer:
             self,
             config:ModelConfig,
             latent_type:Type[Latent],
-            lr=0.2,
-            weight_decay=0.2
+            lr=0.05,
+            weight_decay=0.8
         ):
         self.config = config
         self.scores:list[float] = []
