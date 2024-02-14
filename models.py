@@ -79,8 +79,6 @@ class DreamShaperTurbo(ModelConfig):
         self.guidance_scale = 2
         self.exploit_scale = 0.2
 
-        self.lines = [i for i in self.lines if "woman" in i or "girl" in i or "nsfw" in i]
-
 class UltraSpiceTurbo(ModelConfig):
     def __init__(self, seed_prompts:str="seed_prompts/primary.txt"):
         super().__init__(seed_prompts)
